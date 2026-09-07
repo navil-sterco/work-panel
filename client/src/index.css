@@ -1,0 +1,46 @@
+:root {
+  --ink: #1a1a1a;
+  --paper: #faf9f5;
+  --rule: #d8d5c8;
+  --teal: #0f5c5c;
+  --teal-dim: #d6e6e4;
+  --gold: #b08d57;
+  --muted: #6b6a63;
+  --danger: #a3402f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+body {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 39px,
+    var(--rule) 39px,
+    var(--rule) 40px
+  );
+  background-attachment: local;
+}
+
+h1, h2, h3 {
+  font-family: 'Roboto Slab', serif;
+  margin: 0;
+}
+
+button {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+::selection {
+  background: var(--teal-dim);
+}
