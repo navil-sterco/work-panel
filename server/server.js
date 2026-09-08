@@ -1,43 +1,54 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { appendEntry, fetchRecentEntries, writeEntryAtRow } = require('./sheets');
-const { cleanWorkDescription } = require('./textCleanup');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const {
+  appendEntry,
+  fetchRecentEntries,
+  writeEntryAtRow,
+} = require("./sheets");
+const { cleanWorkDescription } = require("./textCleanup");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
 
 // Get recent entries (reads back from the sheet)
-app.get('/api/entries', async (req, res) => {
+app.get("/api/entries", async (req, res) => {
   try {
     const entries = await fetchRecentEntries(20);
     res.json({ entries });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to read from Google Sheet', details: err.message });
+    res
+      .status(500)
+      .json({
+        error: "Failed to read from Google Sheet",
+        details: err.message,
+      });
   }
 });
 
 // Preview-only: clean up description text without saving anything
-app.post('/api/clean-description', async (req, res) => {
+app.post("/api/clean-description", async (req, res) => {
   try {
     const { text } = req.body;
     const cleaned = await cleanWorkDescription(text);
     res.json({ cleaned });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to clean description', details: err.message });
+    res
+      .status(500)
+      .json({ error: "Failed to clean description", details: err.message });
   }
 });
 
 // Add a new entry — appends a row to the Google Sheet
-app.post('/api/entries', async (req, res) => {
+app.post("/api/entries", async (req, res) => {
   try {
     const {
       date,
@@ -54,7 +65,9 @@ app.post('/api/entries', async (req, res) => {
     } = req.body;
 
     if (!date || !employeeName || !projectName) {
-      return res.status(400).json({ error: 'date, employeeName and projectName are required' });
+      return res
+        .status(400)
+        .json({ error: "date, employeeName and projectName are required" });
     }
 
     const entryData = {
@@ -79,11 +92,16 @@ app.post('/api/entries', async (req, res) => {
     res.status(201).json({ ok: true, row: row.toObject() });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to write to Google Sheet', details: err.message });
+    res
+      .status(500)
+      .json({ error: "Failed to write to Google Sheet", details: err.message });
   }
 });
 
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-  console.log(`Work log server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Work log server running on http://localhost:${PORT}`);
+  });
+}
+module.exports = app;
