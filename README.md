@@ -51,7 +51,7 @@ GOOGLE_SHEET_ID=<the ID from step 1>
 GOOGLE_SHEET_TAB=Sheet1
 GOOGLE_SERVICE_ACCOUNT_EMAIL=<client_email from the JSON key>
 GOOGLE_PRIVATE_KEY="<private_key from the JSON key, keep the \n as literal \n>"
-PORT=5000
+PORT=8000
 ```
 
 Install and run:
@@ -61,7 +61,7 @@ npm install
 npm run dev      # or: npm start
 ```
 
-Server runs on `http://localhost:5000`.
+Server runs on `http://localhost:8000`.
 
 ## 4. Run the client
 
@@ -88,4 +88,4 @@ Opens on `http://localhost:3000` and proxies API calls to the server.
   `server/sheets.js` to match.
 - To deploy, host `server/` anywhere that can keep the `.env` values secret
   (Render, Railway, a small VPS, etc.), and point the client's API calls at
-  that deployed URL instead of `localhost:5000`.
+  that deployed URL instead of `localhost:8000`.
