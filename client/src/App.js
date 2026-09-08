@@ -22,7 +22,7 @@ const PLAN_OPTIONS = ['Planned', 'Unplanned'];
 
 // Read from client/.env (REACT_APP_API_BASE). Falls back to localhost:8000
 // if the env var isn't set, so the app still works out of the box.
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_BASE || 'https://work-panel-u6fu.vercel.app';
 
 const emptyForm = {
   date: new Date().toISOString().slice(0, 10),
