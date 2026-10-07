@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 
 // These match the dropdown options already set up in the Google Sheet.
@@ -24,6 +24,15 @@ const PLAN_OPTIONS = ['Planned', 'Unplanned'];
 // if the env var isn't set, so the app still works out of the box.
 const API_BASE = process.env.REACT_APP_API_BASE || 'https://work-panel-u6fu.vercel.app';
 
+async function fetchNextRow() {
+  const res = await fetch(`${API_BASE}/api/entries/next-row`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Could not determine the next row.');
+  }
+  return data.row;
+}
+
 const emptyForm = {
   date: new Date().toISOString().slice(0, 10),
   employeeName: 'Navil Faisal',
@@ -35,7 +44,6 @@ const emptyForm = {
   status: STATUSES[0],
   effortMins: '',
   assignedBy: '',
-  targetRow: '',
 };
 
 function App() {
@@ -44,6 +52,25 @@ function App() {
   const [cleaning, setCleaning] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
+  const [nextRow, setNextRow] = useState(null);
+  const [loadingNextRow, setLoadingNextRow] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchNextRow()
+      .then((row) => {
+        if (!cancelled) setNextRow(row);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Could not determine the next row to add.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingNextRow(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleChange = (field) => (e) => {
     setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -96,7 +123,8 @@ function App() {
         setError(data.error || 'Failed to save entry.');
         return;
       }
-      setToast('Row added to the sheet.');
+      setToast(data.row);
+      setNextRow(Number(data.row) + 1);
       setForm((f) => ({
         ...emptyForm,
         date: f.date,
@@ -214,23 +242,20 @@ function App() {
           </div>
 
           <label className="full">
-            Row number (optional)
-            <input
-              type="number"
-              min="2"
-              value={form.targetRow}
-              onChange={handleChange('targetRow')}
-              placeholder="Leave blank to add at the end — entering a number overwrites that row"
-            />
-          </label>
-
-          <label className="full">
             Assigned by
             <input type="text" value={form.assignedBy} onChange={handleChange('assignedBy')} placeholder="Optional" />
           </label>
 
+          <div className="notice ok row-preview" role="status" aria-live="polite">
+            {loadingNextRow
+              ? 'Checking next row…'
+              : nextRow
+                ? <>Next entry will be added to row number <strong>{nextRow}</strong></>
+                : 'Next row number is unavailable.'}
+          </div>
+
           {error && <div className="notice error">{error}</div>}
-          {toast && <div className="notice ok">{toast}</div>}
+          {toast && <div className="notice ok">Entry added to row number <strong>{toast}</strong></div>}
 
           <button type="submit" disabled={submitting}>
             {submitting ? 'Saving…' : 'Add to sheet'}

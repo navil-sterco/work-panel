@@ -139,3 +139,14 @@ button[type="submit"]:disabled {
   border-color: var(--teal);
   background: var(--teal-dim);
 }
+
+.notice.ok strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 24px;
+}
+
+.row-preview strong {
+  display: inline;
+  margin-left: 4px;
+}
