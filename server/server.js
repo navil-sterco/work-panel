@@ -2,9 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const {
-  appendEntry,
+  addEntryBelowLastFilledRow,
   fetchRecentEntries,
-  writeEntryAtRow,
+  getNextEntryRow,
 } = require("./sheets");
 const { cleanWorkDescription } = require("./textCleanup");
 
@@ -30,6 +30,18 @@ app.get("/api/entries", async (req, res) => {
         error: "Failed to read from Google Sheet",
         details: err.message,
       });
+  }
+});
+
+app.get("/api/entries/next-row", async (req, res) => {
+  try {
+    const row = await getNextEntryRow();
+    res.json({ row });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ error: "Failed to determine the next row", details: err.message });
   }
 });
 
@@ -61,7 +73,6 @@ app.post("/api/entries", async (req, res) => {
       status,
       effortMins,
       assignedBy,
-      targetRow, // optional — write to this exact row instead of appending
     } = req.body;
 
     if (!date || !employeeName || !projectName) {
@@ -83,13 +94,8 @@ app.post("/api/entries", async (req, res) => {
       assignedBy,
     };
 
-    if (targetRow) {
-      const result = await writeEntryAtRow(Number(targetRow), entryData);
-      return res.status(201).json({ ok: true, row: result });
-    }
-
-    const row = await appendEntry(entryData);
-    res.status(201).json({ ok: true, row: row.toObject() });
+    const result = await addEntryBelowLastFilledRow(entryData);
+    res.status(201).json({ ok: true, row: result.row });
   } catch (err) {
     console.error(err);
     res

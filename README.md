@@ -77,7 +77,11 @@ Opens on `http://localhost:3000` and proxies API calls to the server.
 
 - The React form posts to `POST /api/entries`.
 - The server uses the `google-spreadsheet` package, authenticated as your
-  service account, to append a row matching the form fields.
+  service account, to scan upward in column A and write the entry immediately
+  below the last filled row. The success message shows the row number. If the
+  sheet is full, it appends a row.
+- The form also displays the next destination row before submission and
+  refreshes it after each entry.
 - `GET /api/entries` reads the last 20 rows back so you can see what's been
   logged, without needing to open the Sheet itself.
 

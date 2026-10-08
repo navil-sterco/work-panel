@@ -89,6 +89,34 @@ async function fetchRecentEntries(limit = 20) {
     }));
 }
 
+async function findNextEntryRow(sheet) {
+  await sheet.loadCells(`A2:A${sheet.rowCount}`);
+
+  for (let rowNumber = sheet.rowCount; rowNumber >= 2; rowNumber -= 1) {
+    const value = sheet.getCell(rowNumber - 1, 0).value;
+    if (value != null && !(typeof value === 'string' && value.trim() === '')) {
+      return rowNumber + 1;
+    }
+  }
+
+  return 2;
+}
+
+async function getNextEntryRow() {
+  const sheet = await getSheet();
+  return findNextEntryRow(sheet);
+}
+
+async function addEntryBelowLastFilledRow(entry) {
+  const sheet = await getSheet();
+  const rowNumber = await findNextEntryRow(sheet);
+  if (rowNumber > sheet.rowCount) {
+    const row = await appendEntry(entry);
+    return { row: row.rowNumber };
+  }
+  return writeEntryAtRow(rowNumber, entry);
+}
+
 /**
  * Writes an entry into a specific row number (1-indexed, matching the
  * row numbers you see in Google Sheets). Overwrites whatever is there.
@@ -120,4 +148,10 @@ async function writeEntryAtRow(rowNumber, entry) {
   return { row: rowNumber };
 }
 
-module.exports = { appendEntry, fetchRecentEntries, writeEntryAtRow, HEADERS };
+module.exports = {
+  addEntryBelowLastFilledRow,
+  appendEntry,
+  fetchRecentEntries,
+  getNextEntryRow,
+  HEADERS,
+};
