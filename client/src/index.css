@@ -1,12 +1,10 @@
 :root {
-  --ink: #1a1a1a;
-  --paper: #faf9f5;
-  --rule: #d8d5c8;
-  --teal: #0f5c5c;
-  --teal-dim: #d6e6e4;
-  --gold: #b08d57;
-  --muted: #6b6a63;
-  --danger: #a3402f;
+  --ink: #edf0fa;
+  --paper: #11131b;
+  --rule: #2c3040;
+  --purple: #8b6cff;
+  --muted: #a1a6b8;
+  --danger: #ff8178;
 }
 
 * {
@@ -14,33 +12,28 @@
 }
 
 html, body {
+  min-height: 100%;
   margin: 0;
   padding: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 39px,
-    var(--rule) 39px,
-    var(--rule) 40px
-  );
-  background-attachment: local;
+  background-image: radial-gradient(ellipse at 15% 0%, #202033 0%, #151722 38%, #10121a 100%);
+  background-attachment: fixed;
 }
 
 h1, h2, h3 {
-  font-family: 'Roboto Slab', serif;
+  font-family: inherit;
   margin: 0;
 }
 
 button {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: inherit;
 }
 
 ::selection {
-  background: var(--teal-dim);
+  background: #493c7b;
 }

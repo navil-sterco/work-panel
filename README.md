@@ -80,6 +80,10 @@ Opens on `http://localhost:3000` and proxies API calls to the server.
   service account, to scan upward in column A and write the entry immediately
   below the last filled row. The success message shows the row number. If the
   sheet is full, it appends a row.
+- Enter a row number (2 or greater) to write directly to that row; this
+  overwrites any existing entry there. Leave it blank to use the displayed
+  next row. Multiple selected work types are stored together in the Type of
+  Work cell, separated by commas.
 - The form also displays the next destination row before submission and
   refreshes it after each entry.
 - `GET /api/entries` reads the last 20 rows back so you can see what's been

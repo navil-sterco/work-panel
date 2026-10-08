@@ -123,6 +123,9 @@ async function addEntryBelowLastFilledRow(entry) {
  */
 async function writeEntryAtRow(rowNumber, entry) {
   const sheet = await getSheet();
+  if (rowNumber > sheet.rowCount) {
+    await sheet.addRows(rowNumber - sheet.rowCount);
+  }
   const range = `A${rowNumber}:J${rowNumber}`;
   await sheet.loadCells(range);
 
@@ -154,4 +157,5 @@ module.exports = {
   fetchRecentEntries,
   getNextEntryRow,
   HEADERS,
+  writeEntryAtRow,
 };

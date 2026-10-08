@@ -5,6 +5,7 @@ const {
   addEntryBelowLastFilledRow,
   fetchRecentEntries,
   getNextEntryRow,
+  writeEntryAtRow,
 } = require("./sheets");
 const { cleanWorkDescription } = require("./textCleanup");
 
@@ -73,6 +74,7 @@ app.post("/api/entries", async (req, res) => {
       status,
       effortMins,
       assignedBy,
+      targetRow,
     } = req.body;
 
     if (!date || !employeeName || !projectName) {
@@ -81,12 +83,30 @@ app.post("/api/entries", async (req, res) => {
         .json({ error: "date, employeeName and projectName are required" });
     }
 
+    let rowNumber;
+    if (targetRow !== undefined && targetRow !== null) {
+      const rowValue = String(targetRow).trim();
+      if (rowValue !== "") {
+        const parsedRowNumber = Number(rowValue);
+        if (
+          !/^[0-9]+$/.test(rowValue) ||
+          parsedRowNumber < 2 ||
+          !Number.isSafeInteger(parsedRowNumber)
+        ) {
+          return res
+            .status(400)
+            .json({ error: "row number must be a whole number of 2 or greater" });
+        }
+        rowNumber = parsedRowNumber;
+      }
+    }
+
     const entryData = {
       date,
       employeeName,
       projectName,
       planStatus,
-      workType,
+      workType: Array.isArray(workType) ? workType.join(", ") : workType,
       workDescription,
       pageUrl,
       status,
@@ -94,7 +114,10 @@ app.post("/api/entries", async (req, res) => {
       assignedBy,
     };
 
-    const result = await addEntryBelowLastFilledRow(entryData);
+    const result =
+      rowNumber === undefined
+        ? await addEntryBelowLastFilledRow(entryData)
+        : await writeEntryAtRow(rowNumber, entryData);
     res.status(201).json({ ok: true, row: result.row });
   } catch (err) {
     console.error(err);
