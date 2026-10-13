@@ -49,8 +49,15 @@ app.get("/api/entries/next-row", async (req, res) => {
 // Preview-only: clean up description text without saving anything
 app.post("/api/clean-description", async (req, res) => {
   try {
-    const { text } = req.body;
-    const cleaned = await cleanWorkDescription(text);
+    const { text, numberOfLines = 5 } = req.body;
+    if (!Number.isSafeInteger(numberOfLines) || numberOfLines < 1) {
+      return res
+        .status(400)
+        .json({
+          error: "numberOfLines must be a whole number greater than zero",
+        });
+    }
+    const cleaned = await cleanWorkDescription(text, numberOfLines);
     res.json({ cleaned });
   } catch (err) {
     console.error(err);

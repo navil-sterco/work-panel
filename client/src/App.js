@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
+
 const WORK_TYPES = [
+  "Project Setup",
+  "Backend Setup",
+  "Frontend Integration",
+  "Help",
+  "Testing",
+  "Version Update",
+  "Payment Gatway",
+  "AMC Work",
   "CMS Integration",
   "Module Integration",
   "Banner Integration",
@@ -11,7 +20,17 @@ const WORK_TYPES = [
   "R&D",
   "Ongoing New Development",
   "API Integration",
-  "AMC Work",
+  "API Development",
+  "DevOps",
+  "Database Migration",
+  "Website Migration",
+  "Other Feedback",
+  "Upload to demo",
+  "Security Module",
+  "Server Configured",
+  "Meeting",
+  "GSC SEO Audits",
+  "Feedback",
 ];
 const STATUSES = ["Done", "In Progress", "Pending"];
 const PLAN_OPTIONS = ["Planned", "UnPlanned", "New"];
@@ -250,10 +269,140 @@ function WorkTypeMultiSelect({ options, value, onChange }) {
   );
 }
 
+function Calculator() {
+  const [display, setDisplay] = useState("0");
+  const [storedValue, setStoredValue] = useState(null);
+  const [operator, setOperator] = useState(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
+
+  const enterDigit = (digit) => {
+    setDisplay((current) =>
+      waitingForOperand || current === "0" || current === "Error"
+        ? digit
+        : current + digit,
+    );
+    setWaitingForOperand(false);
+  };
+
+  const enterDecimal = () => {
+    setDisplay((current) => {
+      if (waitingForOperand || current === "Error") return "0.";
+      return current.includes(".") ? current : `${current}.`;
+    });
+    setWaitingForOperand(false);
+  };
+
+  const calculate = (left, right, operation) => {
+    switch (operation) {
+      case "+":
+        return left + right;
+      case "−":
+        return left - right;
+      case "×":
+        return left * right;
+      case "÷":
+        return right === 0 ? null : left / right;
+      default:
+        return right;
+    }
+  };
+
+  const chooseOperator = (nextOperator) => {
+    const currentValue = Number(display);
+    if (!Number.isFinite(currentValue)) return;
+
+    if (operator && !waitingForOperand) {
+      const result = calculate(storedValue, currentValue, operator);
+      if (result === null) {
+        setDisplay("Error");
+        setStoredValue(null);
+        setOperator(null);
+        setWaitingForOperand(false);
+        return;
+      }
+      setDisplay(String(result));
+      setStoredValue(result);
+    } else if (storedValue === null) {
+      setStoredValue(currentValue);
+    }
+
+    setOperator(nextOperator);
+    setWaitingForOperand(true);
+  };
+
+  const showResult = () => {
+    if (!operator || storedValue === null || waitingForOperand) return;
+    const result = calculate(storedValue, Number(display), operator);
+    setDisplay(result === null ? "Error" : String(result));
+    setStoredValue(null);
+    setOperator(null);
+    setWaitingForOperand(true);
+  };
+
+  const clear = () => {
+    setDisplay("0");
+    setStoredValue(null);
+    setOperator(null);
+    setWaitingForOperand(false);
+  };
+
+  const buttons = [
+    { label: "C", action: clear, className: "calculator-clear" },
+    { label: "÷", action: () => chooseOperator("÷"), className: "calculator-operator" },
+    { label: "7", action: () => enterDigit("7") },
+    { label: "8", action: () => enterDigit("8") },
+    { label: "9", action: () => enterDigit("9") },
+    { label: "×", action: () => chooseOperator("×"), className: "calculator-operator" },
+    { label: "4", action: () => enterDigit("4") },
+    { label: "5", action: () => enterDigit("5") },
+    { label: "6", action: () => enterDigit("6") },
+    { label: "−", action: () => chooseOperator("−"), className: "calculator-operator" },
+    { label: "1", action: () => enterDigit("1") },
+    { label: "2", action: () => enterDigit("2") },
+    { label: "3", action: () => enterDigit("3") },
+    { label: "+", action: () => chooseOperator("+"), className: "calculator-operator" },
+    { label: "0", action: () => enterDigit("0"), className: "calculator-zero" },
+    { label: ".", action: enterDecimal },
+    { label: "=", action: showResult, className: "calculator-equals" },
+  ];
+
+  return (
+    <aside className="calculator-card" aria-label="Calculator">
+      <div className="calculator-heading">
+        <h2>Calculator</h2>
+        <p>Quick calculations while you log work.</p>
+      </div>
+      <output className="calculator-display" aria-live="polite">
+        {display}
+      </output>
+      <div className="calculator-buttons">
+        {buttons.map(({ label, action, className = "" }) => (
+          <button
+            type="button"
+            key={label}
+            className={`calculator-button ${className}`}
+            onClick={action}
+            aria-label={
+              label === "C"
+                ? "Clear calculator"
+                : label === "="
+                  ? "Calculate result"
+                  : label
+            }
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
 function App() {
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [cleaning, setCleaning] = useState(false);
+  const [descriptionLines, setDescriptionLines] = useState("");
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
   const [nextRow, setNextRow] = useState(null);
@@ -287,19 +436,29 @@ function App() {
       effortMins:
         value === ""
           ? ""
-          : String(Math.round(Math.min(480, Math.max(0, Number(value))))),
+          : String(Math.round(Math.min(1000, Math.max(0, Number(value))))),
     }));
   };
 
   const handleCleanDescription = async () => {
     if (!form.workDescription.trim()) return;
+    const numberOfLines = descriptionLines.trim()
+      ? Number(descriptionLines)
+      : 5;
+    if (!Number.isSafeInteger(numberOfLines) || numberOfLines < 1) {
+      setError("Enter a whole number of lines greater than zero.");
+      return;
+    }
     setError("");
     setCleaning(true);
     try {
       const res = await fetch(`${API_BASE}/api/clean-description`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: form.workDescription }),
+        body: JSON.stringify({
+          text: form.workDescription,
+          numberOfLines,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -371,7 +530,7 @@ function App() {
         </span>
       </header>
 
-      <main className="layout-single">
+      <main className="layout-with-sidebar">
         <form className="entry-form form-card" onSubmit={handleSubmit}>
           <div className="card-heading">
             <span className="card-icon icon-purple">
@@ -465,7 +624,7 @@ function App() {
                 <input
                   type="range"
                   min="0"
-                  max="480"
+                  max="1000"
                   step="1"
                   value={form.effortMins === "" ? 0 : form.effortMins}
                   onChange={handleEffortChange}
@@ -474,7 +633,7 @@ function App() {
                 <input
                   type="number"
                   min="0"
-                  max="480"
+                  max="1000"
                   step="1"
                   value={form.effortMins}
                   onChange={handleEffortChange}
@@ -484,7 +643,7 @@ function App() {
               </span>
               <span className="range-labels">
                 <span>0 min</span>
-                <span>480 min</span>
+                <span>1000 min</span>
               </span>
             </label>
             <label>
@@ -503,15 +662,35 @@ function App() {
                 <label className="field-label" htmlFor="work-description">
                   <Icon name="note" size={17} /> Work description
                 </label>
-                <button
-                  type="button"
-                  className="clean-btn"
-                  onClick={handleCleanDescription}
-                  disabled={cleaning || !form.workDescription.trim()}
-                >
-                  <Icon name="sparkle" size={15} />
-                  {cleaning ? "Cleaning…" : "Clean up wording"}
-                </button>
+                <span className="description-tools">
+                  <label className="line-count-field" htmlFor="description-lines">
+                    Lines
+                    <input
+                      id="description-lines"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={descriptionLines}
+                      onChange={(event) =>
+                        setDescriptionLines(event.target.value)
+                      }
+                      placeholder="5"
+                      aria-label="Number of work description lines"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="clean-btn"
+                    onClick={handleCleanDescription}
+                    disabled={cleaning || !form.workDescription.trim()}
+                  >
+                    <Icon name="sparkle" size={15} />
+                    {cleaning ? "Cleaning…" : "Clean up wording"}
+                  </button>
+                </span>
+              </span>
+              <span className="field-hint">
+                Leave lines blank to generate 5 lines.
               </span>
               <textarea
                 id="work-description"
@@ -595,6 +774,7 @@ function App() {
             </button>
           </div>
         </form>
+        <Calculator />
       </main>
     </div>
   );

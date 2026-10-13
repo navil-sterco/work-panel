@@ -51,6 +51,7 @@ GOOGLE_SHEET_ID=<the ID from step 1>
 GOOGLE_SHEET_TAB=Sheet1
 GOOGLE_SERVICE_ACCOUNT_EMAIL=<client_email from the JSON key>
 GOOGLE_PRIVATE_KEY="<private_key from the JSON key, keep the \n as literal \n>"
+GROQ_API_KEY=<Groq API key for description cleanup>
 PORT=8000
 ```
 
@@ -86,6 +87,9 @@ Opens on `http://localhost:3000` and proxies API calls to the server.
   Work cell, separated by commas.
 - The form also displays the next destination row before submission and
   refreshes it after each entry.
+- Use the calculator beside the form for quick arithmetic. The description
+  cleanup control can generate a chosen number of numbered lines; leave the
+  line count blank to generate 5.
 - `GET /api/entries` reads the last 20 rows back so you can see what's been
   logged, without needing to open the Sheet itself.
 
